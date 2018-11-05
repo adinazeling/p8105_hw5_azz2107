@@ -1,0 +1,31 @@
+---
+title: "Untitled"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+
+## Problem 1  
+
+```{r longstudy_df, message = FALSE}
+# Create a dataframe containing file names.
+# Input for extracting file data
+longstudy_filenames = 
+  tibble(subject = list.files("data")) %>% 
+  mutate(subject = str_c("./data/", subject))
+
+longstudy_df = 
+  longstudy_filenames %>% 
+  mutate(
+    subject_data = map(.x = subject, ~read_csv(.x))
+  )
+
+
+```
+
+
+## Problem 2  

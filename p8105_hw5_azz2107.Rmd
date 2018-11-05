@@ -6,6 +6,8 @@ output: github_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
+library(rvest)
+library(httr)
 ```
 
 
@@ -63,4 +65,27 @@ longstudy_df %>%
 ```
 
 
-## Problem 2  
+## Problem 2: Washington Post Homicide Dataset
+
+```{r homicide_df, mesage = FALSE}
+# Pull dataset from web and convert it to readable format in R
+# Create city_state variable that combines city and state
+homicide_df = read_csv(url("https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv")) %>% 
+    unite(city_state, city:state, sep = ", ") 
+
+```
+
+```{r}
+# Summarize total number of homicides by city
+homicide_df %>% 
+  group_by(city_state) %>% 
+  summarize(total_homicides = n())
+
+# Summarize total number of unsolved homicides by city
+homicide_df %>% 
+  filter(disposition %in% c("Closed without arrest", "Open/No arrest")) %>% 
+  group_by(city_state) %>% 
+  summarize(unsolved_homicides = n())
+```
+
+

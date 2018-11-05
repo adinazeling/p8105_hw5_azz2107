@@ -9,7 +9,7 @@ library(tidyverse)
 ```
 
 
-## Problem 1  
+## Problem 1: Longitudinal Study 
 
 ```{r longstudy_df, message = FALSE}
 # Create a dataframe containing file names.
@@ -18,12 +18,30 @@ longstudy_filenames =
   tibble(subject = list.files("data")) %>% 
   mutate(subject = str_c("./data/", subject))
 
+# Iterate over filenames and read in data into one dataframe
 longstudy_df = 
   longstudy_filenames %>% 
-  mutate(
-    subject_data = map(.x = subject, ~read_csv(.x))
-  )
+  mutate(subject_data = map(.x = subject, ~read_csv(.x))) %>% 
+  unnest()
 
+# Clean and tidy dataset
+# Separate filename in subject to only contain subjectID
+# Group subjectIDs by individuals administered control or experimental arm
+longstudy_df = longstudy_df %>% 
+  separate(subject, into = c("remove1", "subjectID"), sep = "a/") %>% 
+  separate(subjectID, into = c("subjectID", "remove2"), sep = ".c") %>% 
+  separate(subjectID, into = c("subject_group", "subject_ID"), sep = "_") %>% 
+  select(subject_group, subject_ID, week_1:week_8) %>% 
+  mutate(subject_group = recode(subject_group, 
+                                con = "control", 
+                                exp = "experimental"))
+  
+longstudy_df
+```
+
+
+```{r}
+# Create a spaghetti plot showing observations of each subject over time
 
 ```
 

@@ -17,12 +17,11 @@ library(httr)
 
 ```{r longstudy_df, message = FALSE}
 # Create a dataframe containing file names.
-# Input for extracting file data
 longstudy_filenames = 
   tibble(subject = list.files("data")) %>% 
   mutate(subject = str_c("./data/", subject))
 
-# Iterate over filenames and read in data into one dataframe
+# Iterate over filenames and read in data as one dataframe
 longstudy_df = 
   longstudy_filenames %>% 
   mutate(subject_data = map(.x = subject, ~read_csv(.x))) %>% 
@@ -33,8 +32,8 @@ longstudy_df =
 
 ```{r longstudy_df1}
 # Clean and tidy dataset
-# Separate filename in subject to only contain subjectID
-# Group subjectIDs by individuals administered control or experimental arm
+# Separate filename to only contain subjectID
+# Group subjectIDs by control or experimental arm
 longstudy_df = longstudy_df %>% 
   separate(subject, into = c("remove1", "subjectID"), sep = "a/") %>% 
   separate(subjectID, into = c("subjectID", "remove2"), sep = ".c") %>%
@@ -45,7 +44,7 @@ longstudy_df = longstudy_df %>%
                                 con = "control", 
                                 exp = "experimental"))
 
-# Tidy weekly observations by gathering weekly observations
+# Tidy weekly observations by gathering week variables into one variable
 longstudy_df = longstudy_df %>% 
   gather(key = week, value = value, week_1:week_8) %>% 
   separate(week, into = c("remove1", "week"), sep = "_") %>% 
@@ -59,6 +58,7 @@ longstudy_df
 
 ```{r plot1}
 # Create a spaghetti plot showing observations of each subject over time
+# Group by experimental and control arms
 longstudy_df %>% 
   ggplot(aes(x = week, y = value, group = subject_ID, color = subject_group)) + 
   geom_line() + 
@@ -118,6 +118,7 @@ unsolved_hom = homicide_df %>%
   group_by(city_state) %>% 
   summarize(unsolved_homicides = n())
 
+# Combine summaries into one dataframe
 homicide_count = inner_join(total_hom, unsolved_hom, by = "city_state")
 homicide_count
 ```
@@ -125,7 +126,7 @@ homicide_count
 #### Perform prop.test on Baltimore, MD homicide counts
 
 ```{r}
-# Filter homocide_count dataset to only include Baltimore, MD
+# Filter homicide_count dataset to only include Baltimore, MD
 sample = 
   homicide_count %>% 
   filter(city_state == "Baltimore, MD")
@@ -175,3 +176,4 @@ homicide_count %>%
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
 
+The city with the lowest proportion of unsolved homicide cases is Richmond, VA while the city with the highest proportion of unsolved homicide cases is Chicago, Il.

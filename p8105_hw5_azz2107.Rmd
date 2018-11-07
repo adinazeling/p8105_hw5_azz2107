@@ -67,7 +67,7 @@ longstudy_df %>%
 
 ## Problem 2: Washington Post Homicide Dataset
 
-```{r homicide_df, mesage = FALSE}
+```{r homicide_df, message = FALSE}
 # Pull dataset from web and convert it to readable format in R
 # Create city_state variable that combines city and state
 homicide_df = read_csv(url("https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv")) %>% 
@@ -77,15 +77,43 @@ homicide_df = read_csv(url("https://raw.githubusercontent.com/washingtonpost/dat
 
 ```{r}
 # Summarize total number of homicides by city
-homicide_df %>% 
+total_hom = homicide_df %>% 
   group_by(city_state) %>% 
   summarize(total_homicides = n())
 
 # Summarize total number of unsolved homicides by city
-homicide_df %>% 
+unsolved_hom = homicide_df %>% 
   filter(disposition %in% c("Closed without arrest", "Open/No arrest")) %>% 
   group_by(city_state) %>% 
   summarize(unsolved_homicides = n())
+
+homicide_count = inner_join(total_hom, unsolved_hom, by = "city_state")
+homicide_count
 ```
 
+#### Perform prop.test on Baltimore, MD homicide counts
+
+```{r}
+# Filter homocide_count dataset to only include Baltimore, MD
+sample = 
+  homicide_count %>% 
+  filter(city_state == "Baltimore, MD")
+
+# Perform proportion test on Baltimore, MD
+prop.test(sample$unsolved_homicides, sample$total_homicides) %>% 
+  broom::tidy() %>% 
+  select(estimate, conf.low, conf.high)
+```
+
+#### Create proportion test function
+
+```{r prop_test_function}
+prop_test = function(unsolved_homicides, total_homicides){
+  
+  prop = prop.test(unsolved_homicides, total_homicides)
+  
+  broom::tidy(prop) %>% 
+    select(estimate, conf.low, conf.high)
+}
+```
 
